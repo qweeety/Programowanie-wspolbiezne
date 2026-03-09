@@ -1,4 +1,4 @@
-# Programowanie-wspolbiezne
+# Concurrent programming
 
 ## Working Group
 
