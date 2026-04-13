@@ -4,7 +4,7 @@ namespace LogicTests
 {
     public class SimpleTest
     {
-        [Fact]
+       [Fact]
         public void TestEnvironment()
         {
             int a = 2;
