@@ -10,10 +10,10 @@ namespace Data
         double Y { get; }
         double Radius { get; }
         double Diameter { get; }
-        double Mass { get; }      // ДОБАВИЛИ МАССУ
-        double Vx { get; set; }   // Вектор скорости X
-        double Vy { get; set; }   // Вектор скорости Y
-        void Move();              // Теперь двигается сам на основе Vx и Vy
+        double Mass { get; }      
+        double Vx { get; set; }   
+        double Vy { get; set; }   
+        void Move();              
     }
 
     internal class Ball : IBall

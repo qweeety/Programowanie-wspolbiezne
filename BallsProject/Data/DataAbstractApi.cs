@@ -5,7 +5,6 @@ namespace Data
 {
     public abstract class DataAbstractApi
     {
-        // Обновили сигнатуру создания
         public abstract IBall CreateBall(double x, double y, double radius, double mass, double vx, double vy);
         public abstract double Width { get; }
         public abstract double Height { get; }

@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace LogicTests
 {
-    // ФЕЙКОВЫЙ СЛОЙ ДАННЫХ ДЛЯ ТЕСТОВ (Показывает, что ты умеешь в DI без Moq)
     internal class FakeDataApi : DataAbstractApi
     {
         public override double Width => 500;
@@ -16,8 +15,6 @@ namespace LogicTests
 
         public override IBall CreateBall(double x, double y, double radius, double mass, double vx, double vy)
         {
-            // Для тестов используем реальный класс Ball (или можно сделать FakeBall)
-            // Важно, что мы контролируем процесс
             return DataAbstractApi.CreateApi(Width, Height).CreateBall(x, y, radius, mass, vx, vy);
         }
     }
@@ -29,7 +26,7 @@ namespace LogicTests
         {
             // Arrange
             var fakeData = new FakeDataApi();
-            var api = LogicAbstractApi.CreateApi(fakeData); // Внедрение зависимости (DI)
+            var api = LogicAbstractApi.CreateApi(fakeData);
 
             // Act
             api.CreateBalls(3);
@@ -50,12 +47,12 @@ namespace LogicTests
 
             // Act
             api.Start();
-            await Task.Delay(50); // Ждем чуть-чуть, чтобы поток успел сдвинуть шар
+            await Task.Delay(50);
             api.Stop();
 
             // Assert
-            Assert.NotEqual(initialX, ball.X); // Шар должен был сдвинуться
-            Assert.True(ball.X >= 0 && ball.X <= fakeData.Width); // И не вылететь за границы
+            Assert.NotEqual(initialX, ball.X);
+            Assert.True(ball.X >= 0 && ball.X <= fakeData.Width);
         }
     }
 }
