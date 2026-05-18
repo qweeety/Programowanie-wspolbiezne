@@ -1,27 +1,61 @@
 ﻿using Xunit;
 using Logic;
+using Data;
 using System.Linq;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace LogicTests
 {
+    // ФЕЙКОВЫЙ СЛОЙ ДАННЫХ ДЛЯ ТЕСТОВ (Показывает, что ты умеешь в DI без Moq)
+    internal class FakeDataApi : DataAbstractApi
+    {
+        public override double Width => 500;
+        public override double Height => 400;
+        private List<IBall> _balls = new();
+
+        public override IBall CreateBall(double x, double y, double radius, double mass, double vx, double vy)
+        {
+            // Для тестов используем реальный класс Ball (или можно сделать FakeBall)
+            // Важно, что мы контролируем процесс
+            return DataAbstractApi.CreateApi(Width, Height).CreateBall(x, y, radius, mass, vx, vy);
+        }
+    }
+
     public class LogicTest
     {
         [Fact]
         public void CreateBalls_ShouldAddBalls()
         {
-            var api = LogicAbstractApi.CreateApi();
+            // Arrange
+            var fakeData = new FakeDataApi();
+            var api = LogicAbstractApi.CreateApi(fakeData); // Внедрение зависимости (DI)
+
+            // Act
             api.CreateBalls(3);
+
+            // Assert
             Assert.Equal(3, api.GetBalls().Count);
         }
 
         [Fact]
-        public void Start_ShouldMoveBalls()
+        public async Task Start_ShouldMoveBalls_WithinBounds()
         {
-            var api = LogicAbstractApi.CreateApi();
+            // Arrange
+            var fakeData = new FakeDataApi();
+            var api = LogicAbstractApi.CreateApi(fakeData);
             api.CreateBalls(1);
             var ball = api.GetBalls().First();
+            double initialX = ball.X;
 
-            Assert.True(ball.X >= 0 && ball.X <= 500);
+            // Act
+            api.Start();
+            await Task.Delay(50); // Ждем чуть-чуть, чтобы поток успел сдвинуть шар
+            api.Stop();
+
+            // Assert
+            Assert.NotEqual(initialX, ball.X); // Шар должен был сдвинуться
+            Assert.True(ball.X >= 0 && ball.X <= fakeData.Width); // И не вылететь за границы
         }
     }
 }
