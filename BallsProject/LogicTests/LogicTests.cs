@@ -24,33 +24,27 @@ namespace LogicTests
         [Fact]
         public void CreateBalls_ShouldAddBalls()
         {
-            // Arrange
             var fakeData = new FakeDataApi();
             var api = LogicAbstractApi.CreateApi(fakeData);
 
-            // Act
             api.CreateBalls(3);
 
-            // Assert
             Assert.Equal(3, api.GetBalls().Count);
         }
 
         [Fact]
         public async Task Start_ShouldMoveBalls_WithinBounds()
         {
-            // Arrange
             var fakeData = new FakeDataApi();
             var api = LogicAbstractApi.CreateApi(fakeData);
             api.CreateBalls(1);
             var ball = api.GetBalls().First();
             double initialX = ball.X;
 
-            // Act
             api.Start();
             await Task.Delay(50);
             api.Stop();
 
-            // Assert
             Assert.NotEqual(initialX, ball.X);
             Assert.True(ball.X >= 0 && ball.X <= fakeData.Width);
         }

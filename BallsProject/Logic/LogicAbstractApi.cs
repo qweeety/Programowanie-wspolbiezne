@@ -39,7 +39,7 @@ namespace Logic
                 double mass = r * r;          
                 double x = rand.NextDouble() * (_data.Width - 2 * r);
                 double y = rand.NextDouble() * (_data.Height - 2 * r);
-                double vx = rand.NextDouble() * 4 - 2;
+                double vx = rand.NextDouble() * 4 - 2;  
                 double vy = rand.NextDouble() * 4 - 2;
 
                 _balls.Add(_data.CreateBall(x, y, r, mass, vx, vy));
