@@ -28,7 +28,7 @@ namespace Data
             using StreamWriter sw = new StreamWriter(_filePath, append: true, System.Text.Encoding.ASCII);
             while (_isLogging || !_logQueue.IsEmpty)
             {
-                if (_logQueue.TryDequeue(out string log))
+                if (_logQueue.TryDequeue(out string? log))
                 {
                     await sw.WriteLineAsync(log);
                 }

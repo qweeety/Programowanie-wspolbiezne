@@ -1,6 +1,8 @@
 ﻿using Data;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,6 +28,7 @@ namespace Logic
         private readonly object _lock = new object();
 
         private readonly List<Task> _tasks = new();
+        private Task? _loggerTask;
 
         public LogicLayer(DataAbstractApi data) => _data = data;
 
@@ -35,11 +38,11 @@ namespace Logic
             Random rand = new Random();
             for (int i = 0; i < count; i++)
             {
-                double r = rand.Next(10, 20); 
-                double mass = r * r;          
+                double r = rand.Next(10, 20);
+                double mass = r * r;
                 double x = rand.NextDouble() * (_data.Width - 2 * r);
                 double y = rand.NextDouble() * (_data.Height - 2 * r);
-                double vx = rand.NextDouble() * 4 - 2;  
+                double vx = rand.NextDouble() * 4 - 2;
                 double vy = rand.NextDouble() * 4 - 2;
 
                 _balls.Add(_data.CreateBall(x, y, r, mass, vx, vy));
@@ -57,23 +60,62 @@ namespace Logic
                 Task task = Task.Run(() => BallLoop(ball));
                 _tasks.Add(task);
             }
+
+            _loggerTask = Task.Run(DiagnosticLoop);
         }
 
         public override void Stop()
         {
             _moving = false;
             Task.WaitAll(_tasks.ToArray());
+            _loggerTask?.Wait();
+            _data.StopLogging();
         }
 
         public override List<IBall> GetBalls() => _balls;
 
-        private void BallLoop(IBall ball)
+        private void DiagnosticLoop()
         {
             while (_moving)
             {
+                List<object> snapshot = new List<object>();
+
                 lock (_lock)
                 {
-                    ball.Move();
+                    foreach (var ball in _balls)
+                    {
+                        snapshot.Add(new
+                        {
+                            Time = DateTime.Now.ToString("HH:mm:ss.fff"),
+                            ball.X,
+                            ball.Y,
+                            ball.Vx,
+                            ball.Vy
+                        });
+                    }
+                }
+
+                string json = JsonSerializer.Serialize(snapshot);
+                _data.Log(json);
+
+                Thread.Sleep(100);
+            }
+        }
+
+        private void BallLoop(IBall ball)
+        {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
+            while (_moving)
+            {
+                double delta = sw.ElapsedMilliseconds / 16.0;
+                if (delta == 0) delta = 0.1;
+                sw.Restart();
+
+                lock (_lock)
+                {
+                    ball.Move(delta);
                     CheckWallCollisions(ball);
                     CheckBallCollisions(ball);
                 }
@@ -118,7 +160,6 @@ namespace Logic
                         ball.Vy = ball.Vy - p * other.Mass * ny;
                         other.Vx = other.Vx + p * ball.Mass * nx;
                         other.Vy = other.Vy + p * ball.Mass * ny;
-
                     }
                 }
             }

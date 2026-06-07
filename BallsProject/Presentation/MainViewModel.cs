@@ -29,7 +29,7 @@ namespace Presentation.ViewModel
             });
         }
 
-        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
     }
 
     public class RelayCommand : ICommand

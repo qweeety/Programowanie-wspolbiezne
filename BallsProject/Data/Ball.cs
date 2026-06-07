@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Data;
 using System.Runtime.CompilerServices;
 
 namespace Data
@@ -10,10 +9,10 @@ namespace Data
         double Y { get; }
         double Radius { get; }
         double Diameter { get; }
-        double Mass { get; }      
-        double Vx { get; set; }   
-        double Vy { get; set; }   
-        void Move();              
+        double Mass { get; }
+        double Vx { get; set; }
+        double Vy { get; set; }
+        void Move(double delta);
     }
 
     internal class Ball : IBall
@@ -39,10 +38,10 @@ namespace Data
         public double X { get => _x; }
         public double Y { get => _y; }
 
-        public void Move()
+        public void Move(double delta)
         {
-            _x += Vx;
-            _y += Vy;
+            _x += Vx * delta;
+            _y += Vy * delta;
             OnPropertyChanged(nameof(X));
             OnPropertyChanged(nameof(Y));
         }

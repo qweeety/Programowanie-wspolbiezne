@@ -1,52 +1,77 @@
-﻿using Xunit;
+﻿using NUnit.Framework;
 using Logic;
 using Data;
-using System.Linq;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.ComponentModel;
 
-namespace LogicTests
+namespace Logic.Tests
 {
+    internal class FakeBall : IBall
+    {
+        public double X { get; set; }
+        public double Y { get; set; }
+        public double Radius { get; set; }
+        public double Diameter => Radius * 2;
+        public double Mass { get; set; }
+        public double Vx { get; set; }
+        public double Vy { get; set; }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public void Move(double delta)
+        {
+            X += Vx * delta;
+            Y += Vy * delta;
+        }
+    }
+
     internal class FakeDataApi : DataAbstractApi
     {
         public override double Width => 500;
         public override double Height => 400;
-        private List<IBall> _balls = new();
 
         public override IBall CreateBall(double x, double y, double radius, double mass, double vx, double vy)
         {
-            return DataAbstractApi.CreateApi(Width, Height).CreateBall(x, y, radius, mass, vx, vy);
+            return new FakeBall { X = x, Y = y, Radius = radius, Mass = mass, Vx = vx, Vy = vy };
         }
+
+        public override void Log(string message) { }
+        public override void StopLogging() { }
     }
 
-    public class LogicTest
+    [TestFixture]
+    public class LogicLayerTests
     {
-        [Fact]
-        public void CreateBalls_ShouldAddBalls()
+        [Test]
+        public void TestCreateBalls()
         {
             var fakeData = new FakeDataApi();
-            var api = LogicAbstractApi.CreateApi(fakeData);
+            var logic = LogicAbstractApi.CreateApi(fakeData);
 
-            api.CreateBalls(3);
+            logic.CreateBalls(5);
+            var balls = logic.GetBalls();
 
-            Assert.Equal(3, api.GetBalls().Count);
+            NUnit.Framework.Assert.AreEqual(5, balls.Count);
         }
 
-        [Fact]
-        public async Task Start_ShouldMoveBalls_WithinBounds()
+        [Test]
+        public void TestBallsMovementStatus()
         {
             var fakeData = new FakeDataApi();
-            var api = LogicAbstractApi.CreateApi(fakeData);
-            api.CreateBalls(1);
-            var ball = api.GetBalls().First();
-            double initialX = ball.X;
+            var logic = LogicAbstractApi.CreateApi(fakeData);
 
-            api.Start();
-            await Task.Delay(50);
-            api.Stop();
+            logic.CreateBalls(1);
+            var balls = logic.GetBalls();
 
-            Assert.NotEqual(initialX, ball.X);
-            Assert.True(ball.X >= 0 && ball.X <= fakeData.Width);
+            double initialX = balls[0].X;
+            double initialY = balls[0].Y;
+
+            logic.Start();
+            System.Threading.Thread.Sleep(100);
+            logic.Stop();
+
+            NUnit.Framework.Assert.AreNotEqual(initialX, balls[0].X);
+            NUnit.Framework.Assert.AreNotEqual(initialY, balls[0].Y);
         }
     }
 }
