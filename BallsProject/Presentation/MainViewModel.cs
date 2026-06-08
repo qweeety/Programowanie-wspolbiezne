@@ -8,7 +8,7 @@ namespace Presentation.ViewModel
     public class MainViewModel : System.ComponentModel.INotifyPropertyChanged
     {
         private readonly LogicAbstractApi _logic;
-        public ObservableCollection<IBall> Balls { get; } = new();
+        public ObservableCollection<IBall> Balls { get; } = [];
 
         public ICommand StartCommand { get; }
         public ICommand StopCommand { get; }
